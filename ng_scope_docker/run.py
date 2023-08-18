@@ -10,7 +10,7 @@ def main():
     parser.add_argument('-e', '--earfcn', type=int, help='EARFCN to listen to.')
     parser.add_argument('-r', '--rf-number', type=int, help='Number of SDRs.')
     parser.add_argument('-n', '--name', default='ng-scope', help='Name of container.')
-    parser.add_argument('-d', '--directory', default='$(pwd)')
+    parser.add_argument('-l', '--log', default='$(pwd)')
     parser.add_argument('-i', '--image', default='docker.io/j0lama/ng-scope:latest')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-d', '--docker', action='store_const', dest='prog', const='docker')
@@ -32,10 +32,10 @@ def main():
     else:
         timeout = None
 
-    os.makedirs(args.directory, exist_ok=True)
+    os.makedirs(args.log, exist_ok=True)
     cfg = gen_config(1, args.earfcn)
-    safe_config(cfg, os.path.join(args.directory, 'config.cfg'))
-    docker_cmd = f'{args.prog} run --name {args.name} -ti --privileged --rm -v {args.directory}:/ng-scope/build/ngscope/src/logs/ {args.image}'
+    safe_config(cfg, os.path.join(args.log, 'config.cfg'))
+    docker_cmd = f'{args.prog} run --name {args.name} -ti --privileged --rm -v {args.log}:/ng-scope/build/ngscope/src/logs/ {args.image}'
     exec_cmd = f'./ngscope > /dev/null; ./ngscope -c logs/config.cfg -s "logs/sibs_{cfg["rf_freq"]}.dump" -o logs/dci_output/'
     try:
         result = sp.run(f'{docker_cmd} {exec_cmd}', shell=True, timeout=timeout)
