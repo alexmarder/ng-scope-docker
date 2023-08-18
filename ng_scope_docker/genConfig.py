@@ -2,8 +2,13 @@
 
 import subprocess
 import sys
-from libconf import *
+from argparse import ArgumentParser
+
+from libconf import dumps, LibconfInt64
 from arfcn_calc import earfcn2freq
+
+class USRPException(Exception):
+    pass
   
 
 cfg_tpl = {
@@ -29,7 +34,7 @@ rf_cfg_tpl = {
     'log_ul': True,
 }
 
-def parseUSRPOutput(output):
+def parse_usrp_output(output):
     usrps = []
     for line in output.splitlines():
         if 'serial' in line:
@@ -38,17 +43,17 @@ def parseUSRPOutput(output):
     return usrps
 
 
-def getUSRPs():
+def get_usrps():
     try:
         output = subprocess.check_output('uhd_find_devices', shell=True).strip().decode()
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         output = ''
-    return parseUSRPOutput(output)
+    return parse_usrp_output(output)
 
-def genRFConfig(earfcn, usrpID):
+def gen_rf_config(earfcn, usrpID):
     tmp = rf_cfg_tpl.copy()
     freq = earfcn2freq(earfcn)
-    if freq == None:
+    if freq is None:
         print('Invalid EARFCN {0}'.format(earfcn))
         exit(1)
     tmp['rf_freq'] = int(freq*1000000)
@@ -56,42 +61,45 @@ def genRFConfig(earfcn, usrpID):
     
     return tmp
 
-def genConfig(rfNum, earfcns):
+def gen_config(rfNum, earfcns):
     cfg_tpl['nof_rf_dev'] = rfNum
     
-    usrps = getUSRPs()
+    usrps = get_usrps()
     if len(usrps) < rfNum:
-        raise Exception('ERROR: Not enough available USRPs (avail: {0}, req: {1})'.format(len(usrps), rfNum))
+        raise USRPException('ERROR: Not enough available USRPs (avail: {0}, req: {1})'.format(len(usrps), rfNum))
     
     # Populate main structure
     cfg_tpl['nof_rf_dev'] = rfNum
     
     # Add RFs
     for i in range(rfNum):
-        cfg_tpl['rf_config{0}'.format(i)] = genRFConfig(earfcns, usrps[i])
+        cfg_tpl['rf_config{0}'.format(i)] = gen_rf_config(earfcns, usrps[i])
 
+    return cfg_tpl
+
+def safe_config(cfg, output):
     # Generate file
-    out = dumps(cfg_tpl)
+    out = dumps(cfg)
     # Convert booleans into lowercase
-    out = out.replace('True', 'true')
-    out.replace('False', 'false')
+    out = out.replace('True', 'true').replace('False', 'false')
 
-    return out
-
-def safeConfig(cfg, output):
     with open(output, 'w') as f:
-        f.write(cfg)
+        f.write(out)
 
-if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        print('USAGE: {0} <RF Number> <Earfcn> <Output file>'.format(sys.argv[0]))
-        sys.exit(1)
-    
+def main():
+    parser = ArgumentParser()
+    parser.add_argument('-r', '--rf-number', type=int)
+    parser.add_argument('-e', '--earfcn', type=int)
+    parser.add_argument('-o', '--output')
+    args = parser.parse_args()
+
     try:
-        cfg = genConfig(int(sys.argv[1]), int(sys.argv[2]))
-    except Exception as e:
+        cfg = gen_config(args.rf_number, args.earfcn)
+    except USRPException as e:
         print(e)
         sys.exit(1)
-    
-    safeConfig(cfg, sys.argv[3])
-    
+
+    safe_config(cfg, args.output)
+
+if __name__ == '__main__':
+    main()
