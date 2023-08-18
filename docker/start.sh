@@ -13,4 +13,4 @@ if [ $RET != 0 ]; then
 fi
 
 ./ngscope > /dev/null
-./ngscope -c config.cfg -s logs/sibs.dump -o logs/dci_output/
+./ngscope -c config.cfg -s "logs/sibs_$2.dump" -o logs/dci_output/
