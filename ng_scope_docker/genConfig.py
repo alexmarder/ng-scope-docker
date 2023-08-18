@@ -5,7 +5,7 @@ import sys
 from argparse import ArgumentParser
 
 from libconf import dumps, LibconfInt64
-from arfcn_calc import earfcn2freq
+from ng_scope_docker.arfcn_calc import earfcn2freq
 
 class USRPException(Exception):
     pass
