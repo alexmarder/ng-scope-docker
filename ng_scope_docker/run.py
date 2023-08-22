@@ -39,7 +39,7 @@ def main():
     safe_config(cfg, os.path.join(args.log, 'config.cfg'))
     docker_cmd = f'{args.prog} run --name {args.name} -ti --privileged --rm -v {args.log}:/ng-scope/build/ngscope/src/logs/ {args.image}'
     exec_cmd = f'./ngscope > /dev/null; ./ngscope -c logs/config.cfg -s "logs/sibs_{freq}.dump" -o logs/dci_output/'
-    cmd = f'{docker_cmd} {exec_cmd}'
+    cmd = f'\'{docker_cmd} {exec_cmd}\''
     print(cmd)
     try:
         result = sp.run(cmd, shell=True, timeout=timeout)
