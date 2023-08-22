@@ -1,4 +1,5 @@
 import os
+import signal
 from argparse import ArgumentParser
 import subprocess as sp
 from time import sleep
@@ -51,7 +52,8 @@ def main():
         except KeyboardInterrupt:
             pass
         except sp.TimeoutExpired:
-            p.kill()
+            # p.kill()
+            os.kill(p.pid, signal.SIGTERM)
             p.wait()
             if i < len(args.earfcn) - 1:
                 sleep(10)
