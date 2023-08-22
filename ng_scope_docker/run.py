@@ -41,13 +41,15 @@ def main():
     exec_cmd = f'./ngscope > /dev/null; ./ngscope -c logs/config.cfg -s "logs/sibs_{freq}.dump" -o logs/dci_output/'
     exec_cmd = "'" + exec_cmd + "'"
     cmd = f'{docker_cmd} {exec_cmd}'
-    print(cmd)
+    p = sp.Popen(cmd, shell=True, timeout=timeout)
     try:
-        result = sp.run(cmd, shell=True, timeout=timeout)
+        # result = sp.run(cmd, shell=True, timeout=timeout)
+        p.communicate(timeout=timeout)
     except KeyboardInterrupt:
         pass
     except sp.TimeoutExpired:
-        pass
+        p.kill()
+        p.wait()
 
 
 if __name__ == '__main__':
