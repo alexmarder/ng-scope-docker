@@ -1,6 +1,7 @@
 import os
 from argparse import ArgumentParser
 import subprocess as sp
+from time import sleep
 
 from ng_scope_docker.arfcn_calc import earfcn2freq
 from ng_scope_docker.genConfig import gen_config, safe_config
@@ -35,7 +36,7 @@ def main():
 
     os.makedirs(args.log, exist_ok=True)
 
-    for earfcn in args.earfcn:
+    for i, earfcn in enumerate(args.earfcn):
         freq = earfcn2freq(earfcn)
         cfg = gen_config(args.rf_number, earfcn)
         safe_config(cfg, os.path.join(args.log, 'config.cfg'))
@@ -52,7 +53,8 @@ def main():
         except sp.TimeoutExpired:
             p.kill()
             p.wait()
-
+            if i < len(args.earfcn) - 1:
+                sleep(10)
 
 if __name__ == '__main__':
     main()
