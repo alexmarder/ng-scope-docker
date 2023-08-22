@@ -2,6 +2,7 @@ import os
 from argparse import ArgumentParser
 import subprocess as sp
 
+from ng_scope_docker.arfcn_calc import earfcn2freq
 from ng_scope_docker.genConfig import gen_config, safe_config
 
 
@@ -32,11 +33,12 @@ def main():
     else:
         timeout = None
 
+    freq = earfcn2freq(args.earfcn)
     os.makedirs(args.log, exist_ok=True)
     cfg = gen_config(1, args.earfcn)
     safe_config(cfg, os.path.join(args.log, 'config.cfg'))
     docker_cmd = f'{args.prog} run --name {args.name} -ti --privileged --rm -v {args.log}:/ng-scope/build/ngscope/src/logs/ {args.image}'
-    exec_cmd = f'./ngscope > /dev/null; ./ngscope -c logs/config.cfg -s "logs/sibs_{cfg["rf_freq"]}.dump" -o logs/dci_output/'
+    exec_cmd = f'./ngscope > /dev/null; ./ngscope -c logs/config.cfg -s "logs/sibs_{freq}.dump" -o logs/dci_output/'
     try:
         result = sp.run(f'{docker_cmd} {exec_cmd}', shell=True, timeout=timeout)
     except KeyboardInterrupt:

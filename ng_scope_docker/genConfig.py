@@ -54,10 +54,10 @@ def gen_rf_config(earfcn, usrpID):
     tmp = rf_cfg_tpl.copy()
     freq = earfcn2freq(earfcn)
     if freq is None:
-        print('Invalid EARFCN {0}'.format(earfcn))
+        print(f'Invalid EARFCN {earfcn}')
         exit(1)
     tmp['rf_freq'] = int(freq*1000000)
-    tmp['rf_args'] = 'serial={0}'.format(usrpID)
+    tmp['rf_args'] = f'serial={usrpID}'
     
     return tmp
 
