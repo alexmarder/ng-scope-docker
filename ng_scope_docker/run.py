@@ -37,7 +37,7 @@ def main():
     os.makedirs(args.log, exist_ok=True)
     cfg = gen_config(1, args.earfcn)
     safe_config(cfg, os.path.join(args.log, 'config.cfg'))
-    docker_cmd = f'{args.prog} run --name {args.name} -ti --privileged --rm -v {args.log}:/ng-scope/build/ngscope/src/logs/ {args.image}'
+    docker_cmd = f'{args.prog} run --name {args.name} -ti --privileged --rm -v {args.log}:/ng-scope/build/ngscope/src/logs/ {args.image} bash -c '
     exec_cmd = f'./ngscope > /dev/null; ./ngscope -c logs/config.cfg -s "logs/sibs_{freq}.dump" -o logs/dci_output/'
     exec_cmd = "'" + exec_cmd + "'"
     cmd = f'{docker_cmd} {exec_cmd}'
