@@ -8,8 +8,8 @@ from ng_scope_docker.genConfig import gen_config, safe_config
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument('-e', '--earfcn', type=int, help='EARFCN to listen to.')
-    parser.add_argument('-r', '--rf-number', type=int, help='Number of SDRs.')
+    parser.add_argument('-e', '--earfcn', type=int, nargs='+', help='EARFCN to listen to.')
+    parser.add_argument('-r', '--rf-number', type=int, default=1, help='Number of SDRs.')
     parser.add_argument('-n', '--name', default='ng-scope', help='Name of container.')
     parser.add_argument('-l', '--log', default=os.getcwd())
     parser.add_argument('-i', '--image', default='docker.io/j0lama/ng-scope:latest')
@@ -33,23 +33,25 @@ def main():
     else:
         timeout = None
 
-    freq = earfcn2freq(args.earfcn)
     os.makedirs(args.log, exist_ok=True)
-    cfg = gen_config(1, args.earfcn)
-    safe_config(cfg, os.path.join(args.log, 'config.cfg'))
-    docker_cmd = f'{args.prog} run --name {args.name} -ti --privileged --rm -v {args.log}:/ng-scope/build/ngscope/src/logs/ {args.image} bash -c '
-    exec_cmd = f'./ngscope > /dev/null; ./ngscope -c logs/config.cfg -s "logs/sibs_{freq}.dump" -o logs/dci_output/'
-    exec_cmd = "'" + exec_cmd + "'"
-    cmd = f'{docker_cmd} {exec_cmd}'
-    p = sp.Popen(cmd, shell=True)
-    try:
-        # result = sp.run(cmd, shell=True, timeout=timeout)
-        p.communicate(timeout=timeout)
-    except KeyboardInterrupt:
-        pass
-    except sp.TimeoutExpired:
-        p.kill()
-        p.wait()
+
+    for earfcn in args.earfcn:
+        freq = earfcn2freq(earfcn)
+        cfg = gen_config(args.rf_number, earfcn)
+        safe_config(cfg, os.path.join(args.log, 'config.cfg'))
+        docker_cmd = f'{args.prog} run --name {args.name} -ti --privileged --rm -v {args.log}:/ng-scope/build/ngscope/src/logs/ {args.image} bash -c '
+        exec_cmd = f'./ngscope > /dev/null; ./ngscope -c logs/config.cfg -s "logs/sibs_{freq}.dump" -o logs/dci_output/'
+        exec_cmd = "'" + exec_cmd + "'"
+        cmd = f'{docker_cmd} {exec_cmd}'
+        p = sp.Popen(cmd, shell=True)
+        try:
+            # result = sp.run(cmd, shell=True, timeout=timeout)
+            p.communicate(timeout=timeout)
+        except KeyboardInterrupt:
+            pass
+        except sp.TimeoutExpired:
+            p.kill()
+            p.wait()
 
 
 if __name__ == '__main__':
