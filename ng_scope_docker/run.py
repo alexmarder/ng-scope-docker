@@ -41,7 +41,7 @@ def main():
     exec_cmd = f'./ngscope > /dev/null; ./ngscope -c logs/config.cfg -s "logs/sibs_{freq}.dump" -o logs/dci_output/'
     exec_cmd = "'" + exec_cmd + "'"
     cmd = f'{docker_cmd} {exec_cmd}'
-    p = sp.Popen(cmd, shell=True, timeout=timeout)
+    p = sp.Popen(cmd, shell=True)
     try:
         # result = sp.run(cmd, shell=True, timeout=timeout)
         p.communicate(timeout=timeout)
