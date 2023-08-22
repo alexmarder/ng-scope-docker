@@ -10,7 +10,7 @@ def main():
     parser.add_argument('-e', '--earfcn', type=int, help='EARFCN to listen to.')
     parser.add_argument('-r', '--rf-number', type=int, help='Number of SDRs.')
     parser.add_argument('-n', '--name', default='ng-scope', help='Name of container.')
-    parser.add_argument('-l', '--log', default='$(pwd)')
+    parser.add_argument('-l', '--log', default=os.getcwd())
     parser.add_argument('-i', '--image', default='docker.io/j0lama/ng-scope:latest')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-d', '--docker', action='store_const', dest='prog', const='docker')
