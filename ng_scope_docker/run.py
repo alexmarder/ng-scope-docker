@@ -50,12 +50,13 @@ def main():
             # result = sp.run(cmd, shell=True, timeout=timeout)
             # p.communicate(timeout=timeout)
             p.wait(timeout)
-        except KeyboardInterrupt:
-            pass
+        # except KeyboardInterrupt:
+        #     pass
         except sp.TimeoutExpired:
             # p.kill()
             # os.kill(p.pid, signal.SIGTERM)
             p.stdin.write(b'\x03')
+            p.stdin.flush()
             p.wait()
             if i < len(args.earfcn) - 1:
                 sleep(10)
