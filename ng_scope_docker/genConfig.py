@@ -61,12 +61,15 @@ def gen_rf_config(earfcn, usrpID):
     
     return tmp
 
-def gen_config(rfNum, earfcns):
+def gen_config(rfNum, earfcns, usrps=None):
     cfg_tpl['nof_rf_dev'] = rfNum
-    
-    usrps = get_usrps()
-    if len(usrps) < rfNum:
-        raise USRPException('ERROR: Not enough available USRPs (avail: {0}, req: {1})'.format(len(usrps), rfNum))
+
+    if usrps is None:
+        usrps = get_usrps()
+        if len(usrps) < rfNum:
+            raise USRPException('ERROR: Not enough available USRPs (avail: {0}, req: {1})'.format(len(usrps), rfNum))
+    elif isinstance(usrps, str):
+        usrps = list(usrps)
     
     # Populate main structure
     cfg_tpl['nof_rf_dev'] = rfNum
