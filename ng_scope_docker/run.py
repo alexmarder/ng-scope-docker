@@ -7,6 +7,10 @@ from time import sleep
 from ng_scope_docker.arfcn_calc import earfcn2freq
 from ng_scope_docker.genConfig import gen_config, safe_config
 
+def kill_docker(p: sp.Popen):
+    p.stdin.write(b'\x03')
+    p.stdin.flush()
+    p.wait()
 
 def main():
     parser = ArgumentParser()
@@ -50,14 +54,12 @@ def main():
             # result = sp.run(cmd, shell=True, timeout=timeout)
             # p.communicate(timeout=timeout)
             p.wait(timeout)
-        # except KeyboardInterrupt:
-        #     pass
+        except KeyboardInterrupt:
+            kill_docker(p)
         except sp.TimeoutExpired:
             # p.kill()
             # os.kill(p.pid, signal.SIGTERM)
-            p.stdin.write(b'\x03')
-            p.stdin.flush()
-            p.wait()
+            kill_docker(p)
             if i < len(args.earfcn) - 1:
                 sleep(10)
 
