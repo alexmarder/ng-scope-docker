@@ -45,15 +45,17 @@ def main():
         exec_cmd = f'./ngscope > /dev/null; ./ngscope -c logs/config.cfg -s "logs/sibs_{freq}.dump" -o logs/dci_output/'
         exec_cmd = "'" + exec_cmd + "'"
         cmd = f'{docker_cmd} {exec_cmd}'
-        p = sp.Popen(cmd, shell=True)
+        p = sp.Popen(cmd, shell=True, stdin=sp.PIPE)
         try:
             # result = sp.run(cmd, shell=True, timeout=timeout)
-            p.communicate(timeout=timeout)
+            # p.communicate(timeout=timeout)
+            p.wait(timeout)
         except KeyboardInterrupt:
             pass
         except sp.TimeoutExpired:
             # p.kill()
-            os.kill(p.pid, signal.SIGTERM)
+            # os.kill(p.pid, signal.SIGTERM)
+            p.stdin.write(b'\x03')
             p.wait()
             if i < len(args.earfcn) - 1:
                 sleep(10)
